@@ -3,7 +3,7 @@ import torch
 import sys
 import cv2
 import gdown
-from os.path import exists as file_exists, join
+# from os.path import exists as file_exists, join
 import torchvision.transforms as transforms
 
 from .sort.nn_matching import NearestNeighborDistanceMetric
@@ -15,10 +15,10 @@ from .sort.tracker import Tracker
 # from torchreid.utils.tools import download_url
 from .reid_multibackend import ReIDDetectMultiBackend
 
-__all__ = ['StrongSORT']
+__all__ = ['DeepSORT']
 
 
-class StrongSORT(object):
+class DeepSORT(object):
     def __init__(self, 
                  model_weights,
                  device,
