@@ -9,7 +9,7 @@ from os.path import exists as file_exists
 from .deep.reid_model_factory import show_downloadeable_models, get_model_url, get_model_name
 
 from torchreid.utils import FeatureExtractor
-from torchreid.utils.tools import download_url
+# from torchreid.utils.tools import download_url
 
 
 def check_suffix(file='yolov5s.pt', suffix=('.pt',), msg=''):

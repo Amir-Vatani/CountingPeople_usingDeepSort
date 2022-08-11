@@ -4,7 +4,7 @@ import sys
 import cv2
 import gdown
 # from os.path import exists as file_exists, join
-import torchvision.transforms as transforms
+# import torchvision.transforms as transforms
 
 from .sort.nn_matching import NearestNeighborDistanceMetric
 from .sort.detection import Detection
