@@ -48,13 +48,14 @@ class DeepSORT(object):
             confidences)]
 
         # run on non-maximum supression
-        boxes = np.array([d.tlwh for d in detections])
-        scores = np.array([d.confidence for d in detections])
+        # boxes = np.array([d.tlwh for d in detections])
+        # scores = np.array([d.confidence for d in detections])
 
         # update tracker
         self.tracker.predict()
         self.tracker.update(detections, classes, confidences)
-
+        self.tracker.center_update()
+        
         # output bbox identities
         outputs = []
         for track in self.tracker.tracks:
@@ -72,6 +73,20 @@ class DeepSORT(object):
             outputs = np.stack(outputs, axis=0)
         return outputs
 
+    def cal_up_down(self, total_up, total_down, frameHeight):
+        for track in self.tracker.tracks:
+            if len(track.y_centers) > 1 :
+                if not track.counted and track.y_centers[-1] in range(frameHeight//2 - 30, frameHeight//2 + 30):
+                    direction = track.y_centers[-1] - (sum(track.y_centers[:-1])/len(track.y_centers[:-1]))
+                    if direction < 0 :
+                        total_up += 1
+                        track.counted = True
+                    elif direction > 0 :
+                        total_down += 1
+                        track.counted = True
+                    
+        return total_up, total_down
+        
     @staticmethod
     def _xywh_to_tlwh(bbox_xywh):
         if isinstance(bbox_xywh, np.ndarray):

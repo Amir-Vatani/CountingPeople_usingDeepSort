@@ -65,6 +65,10 @@ class Tracker:
         for track in self.tracks:
             track.camera_update(previous_img, current_img)
 
+    def center_update(self):
+        for track in self.tracks:
+            track.center_update()
+        
     def update(self, detections, classes, confidences):
         """Perform measurement update and track management.
 

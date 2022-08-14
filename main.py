@@ -148,6 +148,8 @@ def run(
     model.warmup(imgsz=(1 if pt else nr_sources, 3, *imgsz))  # warmup
     dt, seen = [0.0, 0.0, 0.0, 0.0], 0
     curr_frames, prev_frames = [None] * nr_sources, [None] * nr_sources
+    
+    total_up, total_down = 0, 0
     for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
@@ -168,6 +170,7 @@ def run(
         pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
         dt[2] += time_sync() - t3
 
+        det_num = 0
         # Process detections
         for i, det in enumerate(pred):  # detections per image
             seen += 1
@@ -205,6 +208,7 @@ def run(
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
+                    det_num = n
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
                 xywhs = xyxy2xywh(det[:, 0:4])
@@ -253,6 +257,20 @@ def run(
 
             # Stream results
             im0 = annotator.result()
+            frameHeight = im0.shape[0]
+            frameWidth = im0.shape[1]
+            
+            total_up, total_down = deepsort_list[i].cal_up_down(total_up, total_down, frameHeight)
+            print("Up = "+str(total_up))
+            print("Down = "+str(total_down))
+            
+            
+            cv2.putText(im0, "Nums : "+str([det_num]), (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
+            cv2.putText(im0, "Total Up : "+str(total_up), (0, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
+            cv2.putText(im0, "Total Down : "+str(total_down), (0, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
+            
+            cv2.line(im0, (0, frameHeight // 2), (frameWidth, frameHeight // 2), (0, 255, 255), 2)
+            
             if show_vid:
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
@@ -289,7 +307,7 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--yolo-weights', nargs='+', type=str, default=WEIGHTS / 'yolov5m.pt', help='model.pt path(s)')
     parser.add_argument('--deep-sort-weights', type=str, default=WEIGHTS / 'osnet_x0_25_msmt17.pt')
-    parser.add_argument('--config-deepsort', type=str, default='deep_sort/configs/deep_sort.yaml')
+    # parser.add_argument('--config-deepsort', type=str, default='deep_sort/configs/deep_sort.yaml')
     parser.add_argument('--source', type=str, default='0', help='file/dir/URL/glob, 0 for webcam')  
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
     parser.add_argument('--conf-thres', type=float, default=0.5, help='confidence threshold')
@@ -298,10 +316,10 @@ def parse_opt():
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--show-vid', action='store_true', help='display tracking video results')
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
-    parser.add_argument('--save-conf', action='store_true', help='save confidences in --save-txt labels')
+    # parser.add_argument('--save-conf', action='store_true', help='save confidences in --save-txt labels')
     parser.add_argument('--save-crop', action='store_true', help='save cropped prediction boxes')
     parser.add_argument('--save-vid', action='store_true', help='save video tracking results')
-    parser.add_argument('--nosave', action='store_true', help='do not save images/videos')
+    # parser.add_argument('--nosave', action='store_true', help='do not save images/videos')
     # class 0 is person, 1 is bycicle, 2 is car... 79 is oven
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --classes 0, or --classes 0 2 3')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
@@ -311,7 +329,7 @@ def parse_opt():
     parser.add_argument('--project', default=ROOT / 'runs/track', help='save results to project/name')
     parser.add_argument('--name', default='exp', help='save results to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
-    parser.add_argument('--line-thickness', default=3, type=int, help='bounding box thickness (pixels)')
+    # parser.add_argument('--line-thickness', default=3, type=int, help='bounding box thickness (pixels)')
     # parser.add_argument('--hide-labels', default=False, action='store_true', help='hide labels')
     # parser.add_argument('--hide-conf', default=False, action='store_true', help='hide confidences')
     # parser.add_argument('--hide-class', default=False, action='store_true', help='hide IDs')

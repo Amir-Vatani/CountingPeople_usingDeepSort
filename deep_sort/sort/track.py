@@ -88,6 +88,10 @@ class Track:
         self.kf = KalmanFilter()
         self.mean, self.covariance = self.kf.initiate(detection)
 
+        self.x_centers = []
+        self.y_centers = []
+        self.counted = False
+        
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
         width, height)`.
@@ -241,7 +245,13 @@ class Track:
         cx, cy = x1_ + w / 2, y1_ + h / 2
         self.mean[:4] = [cx, cy, w / h, h]
 
-
+    def center_update(self):
+        x1, y1, x2, y2 = self.to_tlbr()
+        cx =  (x1 + x2) / 2
+        cy =  (y1 + y2) / 2
+        self.x_centers.append(cx)
+        self.y_centers.append(cy)
+        
     def increment_age(self):
         self.age += 1
         self.time_since_update += 1
