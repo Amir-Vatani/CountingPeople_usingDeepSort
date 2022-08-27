@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import sys
 import cv2
-import gdown
+# import gdown
 # from os.path import exists as file_exists, join
 # import torchvision.transforms as transforms
 
@@ -73,11 +73,12 @@ class DeepSORT(object):
             outputs = np.stack(outputs, axis=0)
         return outputs
 
-    def cal_up_down(self, total_up, total_down, frameHeight):
+    def cal_up_down(self, total_up, total_down, frameHeight, im0):
         for track in self.tracker.tracks:
             if len(track.y_centers) > 1 :
-                if not track.counted and track.y_centers[-1] in range(frameHeight//2 - 30, frameHeight//2 + 30):
+                if not track.counted and int(track.y_centers[-1]) in range(frameHeight//2 - 25, frameHeight//2 + 25):
                     direction = track.y_centers[-1] - (sum(track.y_centers[:-1])/len(track.y_centers[:-1]))
+                    cv2.circle(im0, (int(track.x_centers[-1]),int(track.y_centers[-1])), 4, (0, 255, 0), -1)
                     if direction < 0 :
                         total_up += 1
                         track.counted = True
@@ -85,7 +86,22 @@ class DeepSORT(object):
                         total_down += 1
                         track.counted = True
                     
-        return total_up, total_down
+        return total_up, total_down, im0
+    
+    def cal_left_right(self, total_left, total_right, frameWidth, im0):
+        for track in self.tracker.tracks:
+            if len(track.x_centers) > 1 :
+                if not track.counted and int(track.x_centers[-1]) in range(frameWidth//2 - 25, frameWidth//2 + 25):
+                    direction = track.x_centers[-1] - (sum(track.x_centers[:-1])/len(track.x_centers[:-1]))
+                    cv2.circle(im0, (int(track.x_centers[-1]),int(track.y_centers[-1])), 4, (0, 255, 0), -1)
+                    if direction < 0 :
+                        total_left += 1
+                        track.counted = True
+                    elif direction > 0 :
+                        total_right += 1
+                        track.counted = True
+                    
+        return total_left, total_right, im0
         
     @staticmethod
     def _xywh_to_tlwh(bbox_xywh):
