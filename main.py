@@ -167,8 +167,6 @@ def run(
             s += '%gx%g ' % im.shape[2:]  # print string
 
             annotator = Annotator(im0, line_width=2, pil=not ascii)
-            if ECC:  # camera motion compensation
-                deepsort.tracker.camera_update(prev_frames[i], curr_frames[i])
 
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
