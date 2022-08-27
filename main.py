@@ -1,5 +1,4 @@
 import argparse
-
 import os
 import sys
 import numpy as np
@@ -135,7 +134,7 @@ def run(
         dt[0] += t2 - t1
 
         # Inference
-        visualize = increment_path(save_dir / Path(path[0]).stem, mkdir=True) if visualize else False
+        # visualize = increment_path(save_dir / Path(path[0]).stem, mkdir=True) if visualize else False
         pred = model(im, augment=augment, visualize=visualize)
         t3 = time_sync()
         dt[1] += t3 - t2
@@ -152,14 +151,12 @@ def run(
                 p, im0, _ = path[i], im0s[i].copy(), dataset.count
                 p = Path(p)  # to Path
                 s += f'{i}: '
-                txt_file_name = p.name
-                save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
+                save_path = str(save_dir / p.name)  # im.jp, vid.mp4, ...
             else:
                 p, im0, _ = path, im0s.copy(), getattr(dataset, 'frame', 0)
                 p = Path(p)  # to Path
                 # video file
                 if source.endswith(VID_FORMATS):
-                    txt_file_name = p.stem
                     save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
                 # folder with imgs
                 else:
@@ -180,7 +177,6 @@ def run(
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
-                    # det_num = n
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
                 xywhs = xyxy2xywh(det[:, 0:4])
@@ -264,12 +260,8 @@ def run(
 
             prev_frames[i] = curr_frames[i]
 
-    # Print results
-    t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
-    LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS, %.1fms deep sort update per image at shape {(1, 3, *imgsz)}' % t)
-   
-    if update:
-        strip_optimizer(yolo_weights)  # update model (to fix SourceChangeWarning)
+
+    LOGGER.info('Done Processing !')
 
 
 def parse_opt():

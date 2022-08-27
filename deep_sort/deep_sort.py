@@ -2,17 +2,9 @@ import numpy as np
 import torch
 import sys
 import cv2
-# import gdown
-# from os.path import exists as file_exists, join
-# import torchvision.transforms as transforms
-
 from .sort.nn_matching import NearestNeighborDistanceMetric
 from .sort.detection import Detection
 from .sort.tracker import Tracker
-# from .deep.reid_model_factory import show_downloadeable_models, get_model_url, get_model_name
-
-# from torchreid.utils import FeatureExtractor
-# from torchreid.utils.tools import download_url
 from .reid_multibackend import ReIDDetectMultiBackend
 
 __all__ = ['DeepSORT']
@@ -46,10 +38,6 @@ class DeepSORT(object):
         bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
         detections = [Detection(bbox_tlwh[i], conf, features[i]) for i, conf in enumerate(
             confidences)]
-
-        # run on non-maximum supression
-        # boxes = np.array([d.tlwh for d in detections])
-        # scores = np.array([d.confidence for d in detections])
 
         # update tracker
         self.tracker.predict()
